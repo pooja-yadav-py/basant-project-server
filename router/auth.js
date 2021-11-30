@@ -6,10 +6,11 @@ const User = require("../model/userSchema");
 
 //signup route
 router.post("/signup",async (req,res) => {
-    let { username, gender, email, password, confirmPassword, selectedFile } = req.body;
-    if (!username || !gender || !email || !password || !confirmPassword || !selectedFile) {
+    let { username, gender,DOB,email, password, confirmPassword, selectedFile } = req.body;
+    console.log(req.body)
+    if (!username || !gender ||!DOB || !email || !password || !confirmPassword || !selectedFile) {
         
-        return res.status(420).json({ error: "plz filled the field properly" });
+        return res.status(420).json({ error: "plz fill the field properly" });
       }
       if(password!==confirmPassword){
         return res.status(420).json({ error: "plz check your password" });
@@ -25,7 +26,7 @@ router.post("/signup",async (req,res) => {
             return res.status(422).json({ error: "Email already Exist" });
           }
           
-          const user = new User({ username, gender, email, password, selectedFile });
+          const user = new User({ username, gender, DOB, email, password, selectedFile });
           const userRegister = await user.save();
           res.status(201).json({ message: "user registered successfully" });
           console.log(userRegister);
@@ -57,18 +58,50 @@ router.post("/login", async (req,res) => {
  })
  
 
- //get user info
-   router.get("/loginuser/:email", async (req,res) => {
-   try{
-       loginuseremail = req.params.email;
-       const response = await User.findOne({email:loginuseremail});
-       res.status(200).json({ result: response });
-       console.log(response);
-   }catch(err){
-    res.status(402).json({ message: err.message });
-   }
-   })
+//  //get user info
+//    router.get("/loginuser/:email", async (req,res) => {
+//    try{
+//        loginuseremail = req.params.email;
+//        const response = await User.findOne({ email:email });
+//        res.status(200).json({ result: response });
+//        console.log(response);
+//    }catch(err){
+//     res.status(402).json({ message: err.message });
+//    }
+//    })
+
+ //  forget password 
+
+ router.post("/forgetpassword", async (req,res) => {
+   const { email, DOB } = req.body;
+  
+    const userforgetPass = await User.findOne({ email: email });
+
+    if(userforgetPass){
+      if(DOB===userforgetPass.DOB){
+        res.status(200).json({ message: "valid 1",_id: userforgetPass._id });        
+      }else{
+        res.status(400).json({ message: "DOB is not matched" });
+      }
+    }else{
+      res.status(401).json({ message: "user not exist" });
+    }
+    
    
+ })
+   
+ //change password
+ router.patch("/changePassword/:id", async (req, res) => {
+ try{
+  const _id = req.params.id; 
+  const updatePassword = await User.findByIdAndUpdate(_id, req.body);
+   res.send(updatePassword);
+ }catch(err){
+   res.status(404).send({ message: err.message })
+ }
+
+ })
+ 
   
    
    
