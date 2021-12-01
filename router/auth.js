@@ -74,17 +74,20 @@ router.post("/login", async (req,res) => {
 
  router.post("/forgetpassword", async (req,res) => {
    const { email, DOB } = req.body;
-  
+   
+  //  if (!email || !DOB) {
+  //   return res.status(401).json({ error: "Plz Filled the data" });
+  // }
     const userforgetPass = await User.findOne({ email: email });
-
+  
     if(userforgetPass){
       if(DOB===userforgetPass.DOB){
         res.status(200).json({ message: "valid 1",_id: userforgetPass._id });        
       }else{
-        res.status(400).json({ message: "DOB is not matched" });
+        res.status(422).json({ error: "DOB is not matched" });
       }
     }else{
-      res.status(401).json({ message: "user not exist" });
+      res.status(400).json({ error: "user not exist" });
     }
     
    
@@ -94,10 +97,15 @@ router.post("/login", async (req,res) => {
  router.patch("/changePassword/:id", async (req, res) => {
  try{
   const _id = req.params.id; 
-  const updatePassword = await User.findByIdAndUpdate(_id, req.body);
+  newPassword = Bcrypt.hashSync(req.body.password, 10);
+  console.log(newPassword)
+  
+  const updatePassword = await User.findByIdAndUpdate(_id, { password: newPassword });
    res.send(updatePassword);
  }catch(err){
+   console.log(err)
    res.status(404).send({ message: err.message })
+   
  }
 
  })
